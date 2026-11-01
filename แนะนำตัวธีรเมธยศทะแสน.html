@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>แนะนำตัว ธีรเมธ ยศทะแสน</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#081326;--card:#0f2447;--ink:#fff;--accent:#2f8cff;box-sizing:border-box}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#081326;--card:#0f2447;--ink:#fff;--accent:#2f8cff}}
+:root[data-theme="dark"]{--bg:#081326;--card:#0f2447;--ink:#fff;--accent:#2f8cff}
+html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;font-family:'Noto Sans Thai','Sarabun','Thonburi',system-ui,sans-serif;color:var(--ink)}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#start{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,19,38,.7);backdrop-filter:blur(6px);z-index:5;padding:env(safe-area-inset-top,0px) 20px env(safe-area-inset-bottom,0px)}
+.box{background:var(--card);border:1px solid rgba(80,160,255,.4);border-radius:18px;padding:28px 26px;text-align:center;max-width:360px}
+.box h1{margin:0 0 8px;font-size:24px;line-height:1.35}
+.box p{margin:0 0 20px;font-size:15px;line-height:1.7;opacity:.85}
+button{font:inherit;font-weight:700;font-size:18px;border:0;border-radius:999px;padding:12px 30px;background:var(--accent);color:#fff;cursor:pointer}
+button:focus-visible{outline:3px solid #9fd0ff;outline-offset:3px}
+#sub{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 26px);display:flex;justify-content:center;padding:0 14px;pointer-events:none;z-index:3}
+#sub span{max-width:min(880px,92vw);background:rgba(4,12,30,.62);color:#fff;font-weight:500;font-size:clamp(17px,3vw,30px);line-height:1.5;padding:.3em .9em;border-radius:12px;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,.8);opacity:0;transition:opacity .25s}
+#sub.on span{opacity:1}
+#fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;transition:opacity 2.5s}
+#again{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 30px);z-index:6;display:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="fade"></div>
+<div id="sub"><span id="subt"></span></div>
+<button id="again" type="button">เล่นอีกครั้ง</button>
+<div id="start"><div class="box">
+<h1>แนะนำตัว<br>ธีรเมธ ยศทะแสน</h1>
+<p>เปิดเสียงไว้ และแนะนำให้ใช้จอแนวนอน</p>
+<button id="go" type="button">เริ่มเล่น</button>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const R=new THREE.WebGLRenderer({canvas:$('c'),antialias:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2));
+const S=new THREE.Scene();S.background=new THREE.Color(0x081326);S.fog=new THREE.Fog(0x081326,12,30);
+const C=new THREE.PerspectiveCamera(42,1,.1,80);
+const SG=THREE.SphereGeometry,BG=THREE.BoxGeometry,CG=THREE.CylinderGeometry;
+const M=(c,r=.5,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+const G=(c,i=.9)=>new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:i,roughness:.4});
+const W=(c,o=.6)=>new THREE.MeshBasicMaterial({color:c,wireframe:true,transparent:true,opacity:o});
+const add=(g,m,p,par=S)=>{const o=new THREE.Mesh(g,m);o.position.set(p[0],p[1],p[2]);par.add(o);return o;};
+const lerp=(a,b,k)=>a+(b-a)*k;
+const sm=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x);};
+const tex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.3,'rgba(255,255,255,.7)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})();
+const ptsMat=(c,s,o=1)=>new THREE.PointsMaterial({size:s,map:tex,color:c,transparent:true,opacity:o,blending:THREE.AdditiveBlending,depthWrite:false});
+
+/* lights */
+S.add(new THREE.HemisphereLight(0xcfe3ff,0x10244a,.7));
+const key=new THREE.DirectionalLight(0xffffff,.9);key.position.set(2.5,5,6);S.add(key);
+const fL=new THREE.PointLight(0x5fa8ff,1.2,14);fL.position.set(-4,2.5,2);S.add(fL);
+const fR=new THREE.PointLight(0x3a6bff,1.2,14);fR.position.set(4,2.5,2);S.add(fR);
+const rim=new THREE.PointLight(0x7fd0ff,1.4,10);rim.position.set(0,3,-3);S.add(rim);
+const LC=[[0xffffff,0x5fa8ff,0x3a6bff],[0xffffff,0x5fa8ff,0x3a6bff],[0xeaf6ff,0x39d0ff,0x7a8cff],[0xe8eaff,0x8a6bff,0x39d0ff],[0xf0f6ff,0x3a8bff,0x5fe0ff],[0xfff0d8,0xffb866,0x6fa0ff],[0xffffff,0x66b6ff,0xb9d9ff]].map(a=>a.map(c=>new THREE.Color(c)));
+
+/* room */
+add(new THREE.CircleGeometry(16,64),M(0x0b1d3d,.35,.4),[0,0,0]).rotation.x=-Math.PI/2;
+const grid=new THREE.GridHelper(32,64,0x2a6cd0,0x16356b);grid.material.transparent=true;grid.material.opacity=.3;grid.position.y=.01;S.add(grid);
+add(new THREE.PlaneGeometry(50,16),M(0x0a1630,.8),[0,6,-7]);
+[1.2,3.2,5].forEach(y=>add(new BG(30,.04,.04),G(0x39a0ff,.9),[0,y,-6.9]));
+const dust=new Float32Array(270);for(let i=0;i<90;i++){dust[i*3]=(Math.random()-.5)*16;dust[i*3+1]=Math.random()*6;dust[i*3+2]=-6+Math.random()*8;}
+const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(dust,3));
+const dpts=new THREE.Points(dg,ptsMat(0x9fd0ff,.07,.6));dpts.frustumCulled=false;S.add(dpts);
+const appearRing=add(new THREE.TorusGeometry(1,.02,8,64),new THREE.MeshBasicMaterial({color:0x7fd0ff,transparent:true,opacity:0}),[0,.03,0]);appearRing.rotation.x=Math.PI/2;
+
+/* character: high-school student */
+const ch=new THREE.Group();S.add(ch);
+const skin=M(0xe8b48f,.7),shirt=M(0xf5f7fb,.8),pant=M(0x14213d,.8),hairM=M(0x14100d,.9),dark=M(0x0d1220,.6);
+[-1,1].forEach(s=>{add(new CG(.085,.075,.86,16),pant,[s*.11,.45,0],ch);add(new BG(.13,.07,.26),dark,[s*.11,.04,.05],ch);});
+add(new CG(.25,.21,.62,24),shirt,[0,1.18,0],ch).scale.z=.62;
+add(new CG(.215,.215,.06,24),dark,[0,.87,0],ch).scale.z=.62;
+add(new CG(.22,.2,.12,24),pant,[0,.8,0],ch).scale.z=.65;
+add(new CG(.055,.06,.12,12),skin,[0,1.52,0],ch);
+add(new SG(.02,8,8),G(0x39a0ff,.6),[.12,1.3,.14],ch);
+const head=new THREE.Group();head.position.set(0,1.66,0);ch.add(head);
+add(new SG(.14,32,24),skin,[0,0,0],head).scale.set(.95,1.15,1);
+const hair=add(new SG(.15,32,20,0,Math.PI*2,0,Math.PI*.46),hairM,[0,.005,-.005],head);hair.scale.set(.98,1.12,1.02);hair.rotation.x=-.3;
+const eyes=[];
+[-1,1].forEach(s=>{const e=new THREE.Group();e.position.set(s*.05,.02,.118);head.add(e);
+  add(new SG(.02,12,10),M(0xffffff,.3),[0,0,0],e);add(new SG(.011,10,8),dark,[0,0,.015],e);eyes.push(e);
+  add(new BG(.05,.009,.01),hairM,[s*.05,.048,.13],head).rotation.z=-s*.12;
+  add(new SG(.022,8,8),skin,[s*.142,-.01,0],head);});
+add(new SG(.014,8,8),M(0xd49c78,.8),[0,-.015,.14],head);
+const smile=add(new THREE.TorusGeometry(.03,.004,6,16,Math.PI),M(0x7a2a2a,.6),[0,-.045,.133],head);smile.rotation.z=Math.PI;
+const mouth=add(new SG(.02,12,10),M(0x4a0f14,.5),[0,-.06,.128],head);mouth.visible=false;
+function mkArm(s){const sh=new THREE.Group();sh.position.set(s*.31,1.43,0);ch.add(sh);
+  add(new SG(.065,12,10),shirt,[0,0,0],sh);add(new CG(.055,.05,.3,12),shirt,[0,-.15,0],sh);
+  const el=new THREE.Group();el.position.y=-.3;sh.add(el);
+  add(new CG(.042,.036,.28,12),skin,[0,-.14,0],el);add(new SG(.05,12,10),skin,[0,-.3,0],el);return {sh,el};}
+const aR=mkArm(1),aL=mkArm(-1);
+
+/* props per scene */
+const P=[];for(let i=0;i<7;i++){P[i]=new THREE.Group();P[i].visible=false;P[i].position.y=-5;S.add(P[i]);}
+const wm=M(0xdfe8f5,.3,.6),bl=G(0x39d0ff,.9);
+/* 2 creative models */
+const spin=[add(new THREE.IcosahedronGeometry(.7,1),W(0x39d0ff),[-2.8,2.3,-1.6],P[2]),
+ add(new THREE.TorusKnotGeometry(.45,.14,80,10),M(0xdfe8f5,.25,.6),[2.8,2.2,-1.6],P[2]),
+ add(new BG(.8,.8,.8),W(0x7fb6ff),[2.5,.8,-1],P[2]),
+ add(new THREE.ConeGeometry(.4,.8,5),M(0x2b6fe0,.3,.4),[-2.5,.7,-1],P[2])];
+add(new THREE.IcosahedronGeometry(.4,0),G(0x39a0ff,.5),[-2.8,2.3,-1.6],P[2]);
+add(new BG(.4,.4,.4),G(0x39d0ff,.7),[2.5,.8,-1],P[2]);
+/* 3 AI network */
+const nodes=[];[[-3.6,3],[-1.9,5],[1.9,5],[3.6,3]].forEach(([x,n])=>{const a=[];for(let i=0;i<n;i++){const y=2.2+(i-(n-1)/2)*.75;a.push(new THREE.Vector3(x,y,-2.5));add(new SG(.09,12,10),G(0x5fc8ff,.8),[x,y,-2.5],P[3]);}nodes.push(a);});
+const edges=[],lp=[];for(let l=0;l<3;l++)nodes[l].forEach(a=>nodes[l+1].forEach(b=>{edges.push([a,b]);lp.push(a.x,a.y,a.z,b.x,b.y,b.z);}));
+P[3].add(new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(lp,3)),new THREE.LineBasicMaterial({color:0x4aa8ff,transparent:true,opacity:.28})));
+const PN=40,pp=new Float32Array(PN*3),pe=[],pt=[];for(let i=0;i<PN;i++){pe.push(Math.floor(Math.random()*edges.length));pt.push(Math.random());}
+const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
+const pulse=new THREE.Points(pg,ptsMat(0x9fe0ff,.16));pulse.frustumCulled=false;P[3].add(pulse);
+const ring3=add(new THREE.TorusGeometry(.7,.02,8,48),G(0x7fd0ff,.8),[0,3.4,-2],P[3]);
+const ring4=add(new THREE.TorusGeometry(.55,.02,8,48),G(0x8a9bff,.8),[0,3.4,-2],P[3]);
+/* 4 robotics lab */
+add(new BG(5,.9,.6),M(0x0f2447,.5,.3),[0,.45,-3.4],P[4]);
+[-1.4,0,1.4].forEach(x=>add(new BG(.3,.3,.3),G(0x39d0ff,.6),[x,1.05,-3.4],P[4]));
+const arm=new THREE.Group();arm.position.set(3,0,-1.4);P[4].add(arm);
+add(new CG(.4,.45,.2,24),wm,[0,.1,0],arm);
+const j1=new THREE.Group();j1.position.y=.2;arm.add(j1);add(new CG(.16,.16,.5,16),wm,[0,.25,0],j1);
+const j2=new THREE.Group();j2.position.y=.55;j1.add(j2);add(new SG(.14,16,12),bl,[0,0,0],j2);add(new BG(.16,.95,.16),wm,[0,.48,0],j2);
+const j3=new THREE.Group();j3.position.y=.95;j2.add(j3);add(new SG(.11,16,12),bl,[0,0,0],j3);add(new BG(.13,.75,.13),wm,[0,.38,0],j3);
+[-.06,.06].forEach(x=>add(new BG(.05,.18,.05),wm,[x,.82,0],j3));
+const rb=new THREE.Group();rb.position.set(-3,0,-1.3);P[4].add(rb);
+add(new BG(.7,.8,.5),wm,[0,.9,0],rb);add(new BG(.5,.38,.42),wm,[0,1.52,0],rb);
+[-.12,.12].forEach(x=>{add(new SG(.06,12,10),bl,[x,1.54,.22],rb);add(new BG(.18,.5,.2),wm,[x*1.3,.25,0],rb);});
+add(new CG(.015,.015,.3,6),wm,[0,1.86,0],rb);add(new SG(.05,10,8),bl,[0,2.03,0],rb);
+add(new BG(.14,.55,.14),wm,[-.45,.9,0],rb);
+const rA=add(new BG(.14,.55,.14),wm,[.45,.9,0],rb);
+/* 5 learning (warm) */
+add(new BG(1.3,.05,.8),M(0x16305c,.5,.3),[2.7,.75,-1.1],P[5]);add(new CG(.08,.08,.75,10),wm,[2.7,.37,-1.1],P[5]);
+add(new BG(.6,.03,.4),wm,[2.7,.8,-1.1],P[5]);
+const scr=add(new BG(.6,.4,.02),G(0x4aa8ff,.7),[2.7,1.02,-1.3],P[5]);scr.rotation.x=-.25;
+[0x2b6fe0,0xdfe8f5,0x39a0ff].forEach((c,i)=>add(new BG(.8-i*.08,.14,.55),M(c,.6),[-2.8,.08+i*.15,-1.2],P[5]).rotation.y=(i-1)*.25);
+const bulb=add(new SG(.25,20,16),G(0xffc866,1),[-2.8,2.2,-1.4],P[5]);
+const bulbL=new THREE.PointLight(0xffb866,1.2,6);bulbL.position.copy(bulb.position);P[5].add(bulbL);
+const bring=add(new THREE.TorusGeometry(.5,.015,8,40),G(0xffd890,.8),[-2.8,2.2,-1.4],P[5]);
+/* 6 future globe */
+const gl=new THREE.Group();gl.position.set(0,2.7,-3.2);P[6].add(gl);
+const gw=add(new SG(1.6,24,16),W(0x4aa8ff,.45),[0,0,0],gl);add(new SG(1.55,24,16),M(0x0a2a5e,.5,.2),[0,0,0],gl);
+const cp=new Float32Array(450);for(let i=0;i<150;i++){const u=Math.random()*6.283,v=Math.acos(2*Math.random()-1);cp[i*3]=1.62*Math.sin(v)*Math.cos(u);cp[i*3+1]=1.62*Math.cos(v);cp[i*3+2]=1.62*Math.sin(v)*Math.sin(u);}
+const cg=new THREE.BufferGeometry();cg.setAttribute('position',new THREE.BufferAttribute(cp,3));gw.add(new THREE.Points(cg,ptsMat(0xbfe6ff,.1)));
+const orb1=add(new THREE.TorusGeometry(2.3,.012,8,80),G(0x7fd0ff,.8),[0,0,0],gl);orb1.rotation.x=1.2;
+const orb2=add(new THREE.TorusGeometry(2.7,.012,8,80),G(0x8a9bff,.8),[0,0,0],gl);orb2.rotation.set(.5,0,.6);
+const sat=add(new SG(.07,10,8),G(0xffffff,1),[0,0,0],gl);
+
+/* camera + scene state */
+const cams=[[[0,1.7,7.6],[0,1.35,0]],[[0,1.65,5.4],[0,1.35,0]],[[-.7,1.6,5.2],[.2,1.4,0]],[[.7,1.7,5.4],[0,1.5,-.3]],[[0,1.6,5.8],[0,1.45,-.4]],[[.4,1.55,4.7],[0,1.45,0]],[[0,1.6,4.9],[0,1.5,-.5]]];
+const camP=new THREE.Vector3(...cams[0][0]),camL=new THREE.Vector3(...cams[0][1]);
+let sc=0,scStart=0,speaking=false,gs=0,nodT=-99,tApp=0,playing=false,last=0;
+const setScene=n=>{sc=n;scStart=performance.now()/1000;};
+function resize(){R.setSize(innerWidth,innerHeight,false);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();}
+addEventListener('resize',resize);resize();
+
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt=Math.min(.05,(now-last)/1000||.016);last=now;const at=now/1000,k=1-Math.exp(-dt*1.3);
+  const st=at-scStart,ta=playing?at-tApp:0;
+  /* camera */
+  const [cp_,cl_]=cams[sc],dz=sc===0?0:Math.min(st*.045,.7);
+  camP.lerp(new THREE.Vector3(cp_[0],cp_[1],cp_[2]-dz),k);camL.lerp(new THREE.Vector3(cl_[0],cl_[1],cl_[2]),k);
+  C.position.copy(camP);C.lookAt(camL);
+  /* lights */
+  const lc=LC[sc];key.color.lerp(lc[0],k);fL.color.lerp(lc[1],k);fR.color.lerp(lc[2],k);
+  /* appear */
+  const ap=sm(0,1.4,ta);ch.scale.setScalar(.001+ap*.999);ch.visible=playing||true;
+  appearRing.scale.setScalar(.2+sm(0,1.6,ta)*2.2);appearRing.material.opacity=playing?(1-sm(.2,1.8,ta))*.9:0;
+  /* character */
+  const open=speaking?(.25+.75*Math.abs(Math.sin(at*12.5)))*(.65+.35*Math.sin(at*4.1+1)):0;
+  smile.visible=!speaking;mouth.visible=speaking;mouth.scale.set(1.5,.25+open*1.6,.5);smile.scale.setScalar(sc===6?1.25:1);
+  gs=lerp(gs,speaking?1:0,Math.min(1,dt*4));const gs2=gs*(sc>=3&&sc<=5?1:.15);
+  const w=Math.sin(at*2.2),w2=Math.sin(at*3.1+1);
+  aR.sh.rotation.set(-.55*gs+w*.15*gs,0,.1+.1*gs);aR.el.rotation.x=-.2-.9*gs-w2*.2*gs;
+  aL.sh.rotation.set(-.35*gs2+w2*.1*gs2,0,-.1-.08*gs2);aL.el.rotation.x=-.2-.7*gs2;
+  const n=at-nodT;head.rotation.x=(speaking?Math.sin(at*5)*.03:0)+(n>0&&n<1.6?Math.sin(n/1.6*6.283)*.14:0);
+  head.rotation.y=Math.sin(at*.6)*.06;ch.rotation.y=Math.sin(at*.4)*.04;
+  const bk=(at%3.4)<.12?.1:1;eyes.forEach(e=>e.scale.y=bk);
+  /* props fade/rise */
+  P.forEach((g,i)=>{const t=i===sc?0:-5;g.position.y=lerp(g.position.y,t,1-Math.exp(-dt*2.5));g.visible=g.position.y>-4.8;});
+  spin.forEach((o,i)=>{o.rotation.y=at*.6*(1+i*.2);o.rotation.x=at*.3;});
+  ring3.rotation.x=at;ring4.rotation.y=at*1.2;
+  for(let i=0;i<PN;i++){pt[i]+=dt*.6;if(pt[i]>1){pt[i]=0;pe[i]=Math.floor(Math.random()*edges.length);}
+    const a=edges[pe[i]][0],b=edges[pe[i]][1],t=pt[i];pp[i*3]=lerp(a.x,b.x,t);pp[i*3+1]=lerp(a.y,b.y,t);pp[i*3+2]=lerp(a.z,b.z,t);}
+  pg.attributes.position.needsUpdate=true;
+  j1.rotation.y=Math.sin(at*.8)*.8;j2.rotation.z=.4+Math.sin(at*1.1)*.35;j3.rotation.z=-.9+Math.sin(at*1.3)*.4;
+  rb.position.y=Math.sin(at*2)*.03;rA.rotation.z=Math.sin(at*3)*.3;
+  bulb.scale.setScalar(1+Math.sin(at*3)*.06);bring.rotation.x=at;bring.rotation.y=at*.7;scr.material.emissiveIntensity=.5+Math.sin(at*2)*.2;
+  gw.rotation.y=at*.15;orb1.rotation.z=at*.3;orb2.rotation.y=at*.25;sat.position.set(Math.cos(at*.9)*2.3,Math.sin(at*.9)*Math.sin(1.2)*2.3,Math.sin(at*.9)*Math.cos(1.2)*2.3);
+  for(let i=0;i<90;i++){dust[i*3+1]+=dt*.12;if(dust[i*3+1]>6)dust[i*3+1]=0;}dg.attributes.position.needsUpdate=true;
+  R.render(S,C);
+}
+requestAnimationFrame(frame);
+
+/* music: soft synth pads + arpeggio, kept quiet under the voice */
+let ac,mg,mTimer,mt=0,mS=0;
+const prog=[[261.6,329.6,392,493.9],[220,261.6,329.6,392],[174.6,220,261.6,329.6],[196,246.9,293.7,392]];
+function note(f,s,d,v,type){const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v,s+.03);g.gain.exponentialRampToValueAtTime(.0008,s+d);o.connect(g);g.connect(mg);o.start(s);o.stop(s+d+.05);}
+function sched(){while(mt<ac.currentTime+.8){const c=prog[(mS>>3)&3];if(mS%8===0)c.forEach(f=>note(f/2,mt,4.2,.18,'sine'));note(c[mS%4]*2,mt,.9,.2,'triangle');mt+=.5;mS++;}}
+function musicOn(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.resume)ac.resume();clearInterval(mTimer);
+  mg=ac.createGain();mg.gain.value=0;mg.gain.linearRampToValueAtTime(.15,ac.currentTime+3);mg.connect(ac.destination);mt=ac.currentTime+.1;mS=0;mTimer=setInterval(sched,250);}catch(e){}}
+function musicOff(){try{mg.gain.cancelScheduledValues(ac.currentTime);mg.gain.setValueAtTime(mg.gain.value,ac.currentTime);mg.gain.linearRampToValueAtTime(0,ac.currentTime+2.5);setTimeout(()=>clearInterval(mTimer),2800);}catch(e){}}
+
+/* speech */
+function pickVoice(){const v=(window.speechSynthesis?speechSynthesis.getVoices():[]).filter(x=>x.lang&&x.lang.toLowerCase().replace('_','-').startsWith('th'));
+  const male=v.find(x=>/niwat|male|man|ชาย/i.test(x.name));return {voice:male||v[0]||null,male:!!male};}
+if('speechSynthesis' in window)speechSynthesis.getVoices();
+function say(text){return new Promise(res=>{
+  let done=false,tm;const fin=()=>{if(done)return;done=true;clearTimeout(tm);speaking=false;res();};
+  const fallback=()=>{speaking=true;tm=setTimeout(fin,text.length*85);};
+  if(!('speechSynthesis' in window)){fallback();return;}
+  const u=new SpeechSynthesisUtterance(text),pv=pickVoice();
+  u.lang='th-TH';u.rate=.92;u.pitch=pv.male?1:.7;u.volume=1;if(pv.voice)u.voice=pv.voice;
+  u.onstart=()=>{clearTimeout(tm);speaking=true;tm=setTimeout(fin,text.length*220+3000);};
+  u.onend=u.onerror=fin;
+  tm=setTimeout(()=>{if(!done&&!speaking){u.onend=u.onerror=null;speechSynthesis.cancel();fallback();}},2500);
+  try{speechSynthesis.speak(u);}catch(e){fallback();}
+});}
+
+/* script: exact lines, split into subtitle segments of 1-2 lines (e = end of sentence) */
+const chunks=[
+ {sc:1,e:1,t:'สวัสดีครับ ผมนายธีรเมธ ยศทะแสน ระดับชั้นมัธยมศึกษาปีที่ 6 ครับ'},
+ {sc:2,e:1,t:'ผมสนใจคณะนี้ เพราะผมชื่นชอบการสร้างสรรค์สิ่งใหม่ ๆ ครับ'},
+ {sc:3,t:'ผมอยากต่อยอดจินตนาการของตัวเอง'},
+ {sc:3,e:1,t:'โดยใช้เครื่องมืออย่าง AI มาช่วยเพิ่มประสิทธิภาพในการทำงาน'},
+ {sc:4,t:'และผมยังอยากเปลี่ยนแนวคิดและจินตนาการของตัวเอง'},
+ {sc:4,e:1,t:'ให้กลายเป็นสิ่งที่เกิดขึ้นจริงผ่านเทคโนโลยีและหุ่นยนต์ครับ'},
+ {sc:5,t:'แม้ในตอนนี้ผมยังขาดพื้นฐานและความเข้าใจในงานด้านนี้อีกมาก'},
+ {sc:5,e:1,t:'แต่ผมหวังว่าการได้เข้าศึกษาในคณะนี้ จะช่วยให้ผมเข้าใกล้เป้าหมายได้อีกหนึ่งก้าว'},
+ {sc:6,t:'และในอนาคต ผมตั้งใจจะนำความรู้ที่ได้รับไปต่อยอด'},
+ {sc:6,e:1,t:'เพื่อสร้างประโยชน์และช่วยเหลือสังคมครับ'}];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let runId=0;
+const showSub=t=>{$('subt').textContent=t;$('sub').classList.add('on');},hideSub=()=>$('sub').classList.remove('on');
+async function run(){
+  const id=++runId;
+  await sleep(1200);if(id!==runId)return;setScene(1);
+  await sleep(2200);
+  for(const c of chunks){
+    if(id!==runId)return;
+    if(c.sc!==sc){setScene(c.sc);await sleep(600);}
+    showSub(c.t);await say(c.t);if(id!==runId)return;
+    if(c.e){hideSub();await sleep(850);}else await sleep(220);
+  }
+  if(id!==runId)return;
+  nodT=performance.now()/1000;await sleep(1800);if(id!==runId)return;
+  $('fade').style.opacity='1';musicOff();await sleep(3000);
+  if(id!==runId)return;$('again').style.display='block';
+}
+function begin(){
+  runId++;try{if('speechSynthesis' in window)speechSynthesis.cancel();}catch(e){}
+  $('start').style.display='none';$('again').style.display='none';hideSub();
+  $('fade').style.transition='none';$('fade').style.opacity='0';void $('fade').offsetWidth;$('fade').style.transition='opacity 2.5s';
+  speaking=false;sc=0;scStart=performance.now()/1000;tApp=performance.now()/1000;nodT=-99;playing=true;
+  musicOn();run();
+}
+$('go').addEventListener('click',begin);$('again').addEventListener('click',begin);
+</script>
+</body>
+</html>
